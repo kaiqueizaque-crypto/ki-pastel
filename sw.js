@@ -1,4 +1,4 @@
-var CACHE_NAME = "ki-pastel-v1.0.1";
+var CACHE_NAME = "ki-pastel-v1.0.2";
 
 var urlsToCache = [
   "Cardapio.html",
@@ -55,6 +55,11 @@ self.addEventListener("fetch", function (event) {
         return caches.match(event.request);
       })
   );
+});
+self.addEventListener("message", function (event) {
+  if (event.data && event.data.action === "skipWaiting") {
+    self.skipWaiting();
+  }
 });
 
 
