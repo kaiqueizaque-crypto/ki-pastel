@@ -35,6 +35,14 @@ self.addEventListener("activate", function (event) {
 
 // ✅ Estratégia: primeiro tenta rede, depois cache
 self.addEventListener("fetch", function (event) {
+  var requestUrl = event.request.url;
+
+  // ✅ Ignora cache quando houver ?v= no arquivo
+  if (requestUrl.includes("Cardapio.html?v=")) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(function (response) {
