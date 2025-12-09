@@ -1644,11 +1644,38 @@ function finalizeWhatsAppOrder(clientName, paymentMethod) {
   }
 })();
 </script>
+
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistration().then(function (reg) {
+    if (!reg) return;
+
+    reg.update(); // força o navegador a buscar atualização do SW
+
+    // Se um novo service worker estiver esperando, ativa ele automaticamente
+    if (reg.waiting) {
+      reg.waiting.postMessage({ action: "skipWaiting" });
+    }
+
+    reg.addEventListener("updatefound", function () {
+      var newWorker = reg.installing;
+
+      newWorker.addEventListener("statechange", function () {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          // ✅ Novo SW ativo → recarrega o app automaticamente
+          window.location.reload();
+        }
+      });
+    });
+  });
+}
+</script>
       </main>
     </div>
   </div>
 </body>
 </html>
+
 
 
 
