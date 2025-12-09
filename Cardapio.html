@@ -1619,27 +1619,35 @@ function finalizeWhatsAppOrder(clientName, paymentMethod) {
 </script>
 
 <script>
-(async function () {
+(function () {
   try {
-    const versionKey = "kp_app_version";
-    const currentVersion = APP_VERSION;
-    const savedVersion = localStorage.getItem(versionKey);
+    var versionKey = "kp_app_version";
+    var currentVersion = APP_VERSION;
+    var savedVersion = localStorage.getItem(versionKey);
 
+    //  Se a versão mudou, força reload COM CACHE-BUST
     if (savedVersion !== currentVersion) {
       localStorage.setItem(versionKey, currentVersion);
-
-      const newUrl = window.location.pathname + "?v=" + Date.now();
-      window.location.replace(newUrl);
+      var baseUrl = window.location.pathname;
+      window.location.replace(baseUrl + "?v=" + Date.now());
+      return;
     }
+
+    //  Se já tem versão, mas está sem ?v=, garante que passe a usar
+    if (!window.location.search.includes("v=")) {
+      var baseUrl = window.location.pathname;
+      window.location.replace(baseUrl + "?v=" + Date.now());
+    }
+
   } catch (e) {
     console.error("Erro na verificação de versão", e);
   }
 })();
 </script>
-
       </main>
     </div>
   </div>
 </body>
 </html>
+
 
