@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <script>
+  const APP_VERSION = "1.0.9";
+  </script>
+
+  <!-- PWA CONFIG -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <meta name="theme-color" content="#d32f2f">
+
+  <script>
+  if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+  }
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta 
+  name="viewport" 
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+  <title>Pastelaria Ki-Pastel</title>
+
+  <!-- Fonte (opcional, próxima do visual do cardápio) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --kp-red: #d32f2f;
+      --kp-dark-red: #b71c1c;
+      --kp-yellow: #ffca28;
+      --kp-dark: #1a1a1a;
+      --kp-white: #ffffff;
+      --kp-bg: #d32f2f;
+      --kp-radius-lg: 18px;
+      --kp-shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.28);
+      }
+
+    html, body {
+    touch-action: manipulation;
+      }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--kp-dark-red);
+      color: var(--kp-white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fundo listrado, similar ao pdf */
+    .kp-bg-stripes {
+      min-height: 100vh;
+      background-image: repeating-linear-gradient(
+        135deg,
+        var(--kp-yellow) 0,
+        var(--kp-yellow) 26px,
+        var(--kp-red) 26px,
+        var(--kp-red) 52px
+      );
+      display: flex;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    /* Container principal com “cartão” vermelho */
+    .kp-page {
+      background: var(--kp-bg);
+      width: 100%;
+      max-width: 480px; /* mobile first, mas centralizado em telas maiores */
+      border-radius: var(--kp-radius-lg);
+      box-shadow: var(--kp-shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 3px solid #8b1f1f;
+    }
+
+    /* Cabeçalho */
+    .kp-header {
+      padding: 18px 16px 12px;
+      text-align: center;
+      position: relative;
+    }
+
+    .kp-header-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .kp-logo-wrapper {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 4px solid #000000;
+      background-color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .kp-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .kp-header-text-main {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .kp-header-text-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      background: linear-gradient(to right, #ffe082, #fff8e1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 2px 2px rgba(0,0,0,0.32);
+    }
+
+    .kp-header-since {
+      margin-top: 2px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    /* Bloco informações (telefone, horário, insta) */
+    .kp-header-info {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+
+    .kp-header-phone {
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background-color: #000000;
+      color: var(--kp-yellow);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kp-header-phone a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .kp-header-hours {
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff3e0;
+      color: #bf360c;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    }
+
+    .kp-header-instagram {
+      font-size: 0.9rem;
+    }
+
+    .kp-header-instagram a {
+      color: #ffe082;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .kp-header-instagram a:hover {
+      text-decoration: underline;
+    }
+
+    .kp-header-tagline {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      font-style: italic;
+      opacity: 0.95;
+      max-width: 90%;
+    }
+
+    /* “Selo” no topo (imitando o círculo do pdf) */
+    .kp-header-top-badge {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: rgba(0,0,0,0.45);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Espaço para o restante da página (cardápio, abas, etc.) */
+    .kp-main {
+      background-color: rgba(0,0,0,0.05);
+      border-top: 2px solid rgba(0,0,0,0.25);
+      padding: 10px 10px 16px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+      .kp-header {
+        padding: 20px 24px 14px;
+      }
+
+      .kp-header-text-name {
+        font-size: 1.8rem;
+      }
+
+      .kp-header-hours {
+        font-size: 1rem;
+      }
+
+      .kp-page {
+        max-width: 520px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="kp-bg-stripes">
+    <div class="kp-page">
+      <header class="kp-header">
+        <div class="kp-header-top-badge">
+          Ki-Pastel • 2014
+      </div>
+        <div class="kp-header-brand">
+        <div class="kp-logo-wrapper">
+           <img
+            src="icon-192.png"
+            alt="Logo Pastelaria Ki-Pastel"
+            class="kp-logo"
+            />
+         </div>
+          <div class="kp-header-text">
+            <div class="kp-header-text-main">Pastelaria</div>
+            <div class="kp-header-text-name">KI-PASTEL</div>
+            <div class="kp-header-since">Desde 2014</div>
+          </div>
+        </div>
+
+        <div class="kp-header-info">
+          <div class="kp-header-phone">
+            <span>Tel:</span>
+            <a href="tel:+5571992984064">(71) 99298-4064</a>
+          </div>
+
+          <div class="kp-header-hours">
+            Quarta a Domingo • 18h às 23h
+          </div>
+
+          <p class="kp-header-instagram">
+            Instagram:
+            <a href="https://www.instagram.com/ki_pastel_oficial_/" target="_blank" rel="noopener">
+              @ki_pastel_oficial_
+            </a>
+          </p>
+
+          <p class="kp-header-tagline">
+            “Tudo passa menos a vontade de lanchar na ki-pastel”
+          </p>
+        </div>
+      </header>
+
+      <main class="kp-main" id="kp-main">
+        <!-- INÍCIO DAS PRÓXIMAS SEÇÕES (Partes 3 em diante serão coladas aqui) -->
+
+        <!-- ========================= -->
+        <!-- PARTE 3 – AVISOS + ADICIONAIS -->
+        <!-- ========================= -->
+
+<section class="kp-alerts-section">
+  <div class="kp-alert-box">
+    ⚠️ <strong>Atenção:</strong> Os pastéis do número <strong>115 ao 134</strong> são sabores especiais.
+  </div>
+
+  <div class="kp-alert-box highlight">
+    ⏳ Todos os produtos são feitos <strong>na hora</strong>. Pedimos sua compreensão.
+  </div>
+
+  <div class="kp-alert-box danger">
+    🚫 <strong>Não realizamos entregas no momento.</strong><br>
+    ✅ O pedido deve ser <strong>retirado no local</strong>.
+  </div>
+</section>
+
+<section class="kp-additionals-section">
+  <h2 class="kp-section-title">➕ Adicionais</h2>
+
+  <ul class="kp-additionals-list">
+    <li>Cheddar <span>R$ 2,00</span></li>
+    <li>Catupiry <span>R$ 2,00</span></li>
+    <li>Milho <span>R$ 1,50</span></li>
+    <li>Azeitona <span>R$ 1,50</span></li>
+    <li>Purê <span>R$ 2,50</span></li>
+    <li>Queijo <span>R$ 5,00</span></li>
+    <li>Proteína <span>R$ 5,00</span></li>
+  </ul>
+</section>
+
+<style>
+/* ========================= */
+/* ESTILOS – PARTE 3 */
+/* ========================= */
+
+.kp-alerts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.kp-alert-box {
+  background: #fff3cd;
+  color: #5f370e;
+  border-left: 6px solid #ffca28;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.kp-alert-box.highlight {
+  background: #e8f5e9;
+  border-left-color: #2e7d32;
+  color: #1b5e20;
+}
+
+.kp-alert-box.danger {
+  background: #ffebee;
+  border-left-color: #c62828;
+  color: #b71c1c;
+  font-weight: 600;
+}
+
+.kp-additionals-section {
+  background: rgba(0,0,0,0.35);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+}
+
+.kp-section-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  color: #ffe082;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.kp-additionals-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.kp-additionals-list li {
+  background: #000000;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ffca28;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.35);
+}
+
+.kp-additionals-list li span {
+  color: #ffca28;
+  font-weight: 700;
+  margin-left: 6px;
+}
+</style>
+<!-- ========================= -->
+<!-- PARTE 4 – ABAS DE CATEGORIAS -->
+<!-- ========================= -->
+
+<section class="kp-tabs-section">
+  <div class="kp-tabs-container">
+    <button class="kp-tab active" data-category="frango">Frango</button>
+    <button class="kp-tab" data-category="carne">Carne</button>
+    <button class="kp-tab" data-category="carne-seca">Carne Seca</button>
+    <button class="kp-tab" data-category="carne-sol">Carne do Sol</button>
+    <button class="kp-tab" data-category="calabresa">Calabresa</button>
+    <button class="kp-tab" data-category="strogonoff">Strogonoff</button>
+    <button class="kp-tab" data-category="atum">Atum</button>
+    <button class="kp-tab" data-category="pizza">Pizza</button>
+    <button class="kp-tab" data-category="misto">Misto</button>
+    <button class="kp-tab" data-category="queijo">Queijo</button>
+    <button class="kp-tab" data-category="doces">Doces</button>
+    <button class="kp-tab special" data-category="especiais">especiais</button>
+    <button class="kp-tab xtudo" data-category="xtudo">X-Tudo</button>
+  </div>
+<section class="kp-items-section">
+
+  <!-- MENSAGEM INICIAL -->
+  <div class="kp-items-placeholder" id="kp-initial-placeholder">
+    Selecione uma categoria para visualizar os sabores.
+  </div>
+
+  <!-- BARRA DE PESQUISA (só aparece após clicar na categoria) -->
+  <div class="kp-search-bar" id="kp-search-bar" style="display:none;">
+    <input 
+      type="text" 
+      id="kp-search-input" 
+      placeholder="Pesquisar por nome ou número do item..."
+    >
+  </div>
+
+  <!-- ITENS -->
+  <div id="kp-menu-section"></div>
+
+</section>
+
+<style>
+/* ========================= */
+/* ESTILOS – PARTE 4 */
+/* ========================= */
+
+.kp-tabs-section {
+  background: rgba(0,0,0,0.45);
+  padding: 8px 6px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+.kp-tabs-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.kp-tabs-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.kp-tabs-container::-webkit-scrollbar-thumb {
+  background: #ffca28;
+  border-radius: 10px;
+}
+
+.kp-tab {
+  flex: 0 0 auto;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #ffca28;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+
+.kp-tab:hover {
+  background: #1a1a1a;
+  transform: scale(1.04);
+}
+
+.kp-tab.active {
+  background: linear-gradient(to right, #ffca28, #ffe082);
+  color: #000000;
+  border-color: #000000;
+}
+
+.kp-tab.special {
+  background: #b71c1c;
+  border-color: #ffffff;
+}
+
+.kp-tab.xtudo {
+  background: #2e7d32;
+  border-color: #ffffff;
+}
+
+.kp-items-section {
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  padding: 6px;
+  min-height: 40px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.35);
+}
+
+.kp-items-placeholder {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.9;
+  padding: 8px 10px;
+  line-height: 1.3;
+}
+
+.kp-search-bar {
+  background: #9c1c1c;
+  border-radius: 10px;
+  padding: 6px;
+  margin-bottom: 8px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.35);
+}
+
+.kp-search-bar input {
+  width: 100%;
+  background: #7a1515;   /* ✅ VERMELHO ESCURO */
+  color: #ffffff;
+  border: 1px solid #ffca28;
+  outline: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.kp-search-bar input::placeholder {
+  color: #ffd54f;
+}
+
+
+</style>
+
+<script>
+document.querySelectorAll(".kp-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".kp-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    const category = tab.getAttribute("data-category");
+
+    // ✅ AGORA CHAMA DIRETO A FUNÇÃO QUE REALMENTE MOSTRA OS ITENS
+    renderMenu(category);
+  });
+});
+</script>
+
+<!-- ========================= -->
+<!-- PARTE 5 – ITENS DO CARDÁPIO (BASE DINÂMICA) -->
+<!-- ========================= -->
+
+<section class="kp-menu-section" id="kp-menu-section"></section>
+
+<style>
+/* ========================= */
+/* ESTILOS – PARTE 5 */
+/* ========================= */
+
+.kp-item-card {
+  background: #000000;
+  border: 2px solid #ffca28;
+  border-radius: 14px;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+}
+
+.kp-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.kp-item-number {
+  background: #ffca28;
+  color: #000000;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.kp-item-price {
+  color: #ffca28;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.kp-item-name {
+  font-size: 0.85rem;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.kp-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kp-qty-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #ffca28;
+  color: #000000;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.kp-qty-display {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.kp-additional-btn {
+  margin-left: auto;
+  background: #2e7d32;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+/* Opcionais */
+.kp-additionals-box {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ffca28;
+  display: none;
+}
+
+.kp-additionals-box label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+}
+</style>
+
+<script>
+/* ========================= */
+/* SCRIPT – PARTE 5 */
+/* ========================= */
+
+var menuItems = [
+  // ===== FRANGO =====
+  { "id": 1, "name": "frango", "price": 17.50, "category": "frango" },
+  { "id": 2, "name": "Frango com Queijo", "price": 17.50, "category": "frango" },
+  { "id": 3, "name": "Frango com Cheddar", "price": 17.50, "category": "frango" },
+  { "id": 4, "name": "Frango com Catupiry", "price": 17.50, "category": "frango" },
+  { "id": 5, "name": "Frango com Purê", "price": 17.50, "category": "frango" },
+  { "id": 6, "name": "Frango com Milho", "price": 17.50, "category": "frango" },
+  { "id": 7, "name": "Frango com Calabresa", "price": 17.50, "category": "frango" },
+  { "id": 8, "name": "Frango com Carne", "price": 17.50, "category": "frango" },
+  { "id": 9, "name": "Frango com Carne Seca", "price": 18.50, "category": "frango" },
+  { "id": 10, "name": "Frango com Carne do Sol", "price": 18.50, "category": "frango" },
+  { "id": 11, "name": "Frango com Calabresa e Carne do Sol", "price": 18.50, "category": "frango" },
+  { "id": 12, "name": "Frango com Calabresa e Cheddar", "price": 17.50, "category": "frango" },
+  { "id": 13, "name": "Frango com Calabresa e Queijo", "price": 17.50, "category": "frango" },
+  { "id": 14, "name": "Frango com Carne e Calabresa", "price": 17.50, "category": "frango" },
+  { "id": 15, "name": "Frango com Carne e Cheddar", "price": 17.50, "category": "frango" },
+  { "id": 16, "name": "Frango com Carne e Catupiry", "price": 17.50, "category": "frango" },
+  { "id": 17, "name": "Frango com Carne e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 18, "name": "Frango com Purê e Calabresa", "price": 17.50, "category": "frango" },
+  { "id": 19, "name": "Frango com Carne Calabresa e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 20, "name": "Frango com Purê de Aipim e Carne do Sol", "price": 18.50, "category": "frango" },
+  { "id": 21, "name": "Frango com Purê de Aipim, Carne e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 22, "name": "Frango com Purê de Aipim, Calabresa e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 23, "name": "Frango, Bacon, Calabresa e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 24, "name": "Frango, Purê de Aipim, Bacon, Calabresa, Carne e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 25, "name": "Frango, Carne, Milho e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 26, "name": "Frango, Bacon, Milho, Purê de Aipim e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 27, "name": "Frango, Milho, Vinagrete, Calabresa e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 28, "name": "Frango, Bacon, Queijo, Vinagrete e Milho", "price": 18.00, "category": "frango" },
+  { "id": 29, "name": "Frango, Carne Seca, Milho e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 30, "name": "Frango, Carne do Sol, Purê, Milho e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 141, "name": "Frango, Calabresa e Catupiry", "price": 18.00, "category": "frango" },
+  { "id": 142, "name": "Frango, Purê e Queijo", "price": 17.50, "category": "frango" },
+  { "id": 143, "name": "Frango, Milho e Queijo", "price": 17.50, "category": "frango" },
+  { "id": 144, "name": "Frango, Cheddar e Queijo", "price": 17.50, "category": "frango" },
+  { "id": 145, "name": "Frango, Catupiry e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 146, "name": "Frango, Catupiry, Cheddar e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 147, "name": "Frango, Azeitona, Vinagrete, Milho e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 148, "name": "Frango, Purê, Cheddar e Milho", "price": 17.50, "category": "frango" },
+  { "id": 149, "name": "Frango, Purê, Catupiry e Milho", "price": 17.50, "category": "frango" },
+  { "id": 150, "name": "Frango, Salame, Lombinho e Queijo", "price": 19.00, "category": "frango" },
+  { "id": 233, "name": "Frango, Purê, Bacon e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 234, "name": "Frango, Cheddar, Bacon e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 235, "name": "Frango, Catupiry, Bacon e Queijo", "price": 18.50, "category": "frango" },
+  { "id": 236, "name": "Frango, Purê, Cheddar e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 237, "name": "Frango, Purê, Catupiry e Queijo", "price": 18.00, "category": "frango" },
+  { "id": 238, "name": "Frango, Lombinho, Salame, Pepperoni e Queijo", "price": 21.00, "category": "frango" },
+  { "id": 239, "name": "Frango, Bacon e Queijo", "price": 19.00, "category": "frango" },
+  { "id": 240, "name": "Frango com Bacon", "price": 18.50, "category": "frango" },
+  { "id": 241, "name": "Frango, Calabresa e Bacon", "price": 18.50, "category": "frango" },
+  { "id": 242, "name": "Frango, Bacon e Cheddar", "price": 18.50, "category": "frango" },
+  { "id": 243, "name": "Frango, Bacon e Catupiry", "price": 18.50, "category": "frango" },
+  { "id": 244, "name": "Frango, Lombinho, Peito de Peru, Bacon e Queijo", "price": 20.00, "category": "frango" },
+
+  // ===== CARNE =====
+  { "id": 31, "name": "carne", "price": 17.00, "category": "carne" },
+  { "id": 32, "name": "Carne com Queijo", "price": 17.50, "category": "carne" },
+  { "id": 33, "name": "Carne com Cheddar", "price": 17.50, "category": "carne" },
+  { "id": 34, "name": "Carne com Catupiry", "price": 17.50, "category": "carne" },
+  { "id": 35, "name": "Carne com Purê", "price": 17.50, "category": "carne" },
+  { "id": 36, "name": "Carne com Calabresa", "price": 17.50, "category": "carne" },
+  { "id": 37, "name": "Carne, Calabresa e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 38, "name": "Carne, Calabresa e Cheddar", "price": 17.50, "category": "carne" },
+  { "id": 39, "name": "Carne, Calabresa e Catupiry", "price": 17.50, "category": "carne" },
+  { "id": 40, "name": "Carne com Milho", "price": 17.00, "category": "carne" },
+  { "id": 41, "name": "Carne, Purê e Calabresa", "price": 17.50, "category": "carne" },
+  { "id": 42, "name": "Carne, Purê e Queijo", "price": 17.50, "category": "carne" },
+  { "id": 43, "name": "Carne, Calabresa, Purê e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 44, "name": "Carne, Milho e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 45, "name": "Carne, Calabresa, Bacon, Purê e Queijo", "price": 18.50, "category": "carne" },
+  { "id": 46, "name": "Carne, Bacon, Milho, Vinagrete e Queijo", "price": 18.50, "category": "carne" },
+  { "id": 47, "name": "Carne, Lombinho, Calabresa, Milho e Queijo", "price": 18.50, "category": "carne" },
+  { "id": 151, "name": "Carne, Salame, Calabresa, Milho e Queijo", "price": 19.00, "category": "carne" },
+  { "id": 152, "name": "Carne, Salame, Azeitona, Milho e Queijo", "price": 18.50, "category": "carne" },
+  { "id": 153, "name": "Carne, Purê, Salame, Lombinho, Calabresa e Queijo", "price": 19.50, "category": "carne" },
+  { "id": 154, "name": "Carne, Salame, Azeitona, Purê e Queijo", "price": 18.50, "category": "carne" },
+  { "id": 155, "name": "Carne, Catupiry e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 156, "name": "Carne, Cheddar e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 157, "name": "Carne, Cheddar, Catupiry e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 158, "name": "Carne, Azeitona, Calabresa, Salame e Queijo", "price": 19.00, "category": "carne" },
+  { "id": 159, "name": "Carne, Azeitona, Calabresa, Salame e Catupiry", "price": 19.00, "category": "carne" },
+  { "id": 160, "name": "Carne, Azeitona, Calabresa, Salame e Cheddar", "price": 19.00, "category": "carne" },
+  { "id": 245, "name": "Carne, Calabresa e Bacon", "price": 18.50, "category": "carne" },
+  { "id": 246, "name": "Carne, Bacon, Pepperoni e Queijo", "price": 20.00, "category": "carne" },
+  { "id": 247, "name": "Carne, Bacon e Cheddar", "price": 18.00, "category": "carne" },
+  { "id": 248, "name": "Carne, Bacon e Catupiry", "price": 18.00, "category": "carne" },
+  { "id": 249, "name": "Carne, Purê, Cheddar e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 250, "name": "Carne, Purê, Catupiry e Queijo", "price": 18.00, "category": "carne" },
+  { "id": 251, "name": "Carne, Lombinho, Peito de Peru, Pepperoni e Queijo", "price": 21.00, "category": "carne" },
+  { "id": 252, "name": "Carne, Calabresa, Bacon, Vinagrete e Queijo", "price": 19.00, "category": "carne" },
+  { "id": 253, "name": "Carne, Bacon e Queijo", "price": 19.00, "category": "carne" },
+
+  // ===== CARNE SECA =====
+  { "id": 58, "name": "Carne Seca com Purê", "price": 18.00, "category": "carne-seca" },
+  { "id": 59, "name": "Carne Seca com Cheddar", "price": 18.00, "category": "carne-seca" },
+  { "id": 60, "name": "Carne Seca com Catupiry", "price": 18.00, "category": "carne-seca" },
+  { "id": 61, "name": "Carne Seca com Queijo e Calabresa", "price": 19.50, "category": "carne-seca" },
+  { "id": 62, "name": "Carne Seca com Frango e Vinagrete", "price": 18.50, "category": "carne-seca" },
+  { "id": 63, "name": "Carne Seca com Calabresa, Frango e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 64, "name": "Carne Seca com Calabresa, Frango e Cheddar", "price": 19.50, "category": "carne-seca" },
+  { "id": 65, "name": "Carne Seca com Calabresa, Frango e Catupiry", "price": 19.50, "category": "carne-seca" },
+  { "id": 66, "name": "Carne Seca com Purê, Calabresa e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 67, "name": "Carne Seca com Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 68, "name": "Carne Seca com Bacon, Milho, Calabresa e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 69, "name": "Carne Seca com Bacon, Frango, Milho, Calabresa e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 70, "name": "Carne Seca com Bacon e Calabresa", "price": 21.00, "category": "carne-seca" },
+  { "id": 169, "name": "Carne Seca, Purê e Queijo", "price": 18.50, "category": "carne-seca" },
+  { "id": 170, "name": "Carne Seca, Salame, Lombinho e Queijo", "price": 21.00, "category": "carne-seca" },
+  { "id": 171, "name": "Carne Seca, Vinagrete, Azeitona, Milho e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 172, "name": "Carne Seca, Purê, Salame, Azeitona e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 173, "name": "Carne Seca, Cheddar, Catupiry e Queijo", "price": 19.00, "category": "carne-seca" },
+  { "id": 174, "name": "Carne Seca, Purê, Cheddar e Queijo", "price": 18.50, "category": "carne-seca" },
+  { "id": 175, "name": "Carne Seca, Purê, Catupiry e Queijo", "price": 18.50, "category": "carne-seca" },
+  { "id": 176, "name": "Carne Seca, Lombinho e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 177, "name": "Carne Seca, Lombinho, Cheddar e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 178, "name": "Carne Seca, Lombinho, Catupiry e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 179, "name": "Carne Seca, Azeitona e Queijo", "price": 19.50, "category": "carne-seca" },
+  { "id": 180, "name": "Carne Seca, Azeitona e Cheddar", "price": 19.50, "category": "carne-seca" },
+  { "id": 181, "name": "Carne Seca, Azeitona e Catupiry", "price": 19.50, "category": "carne-seca" },
+  { "id": 182, "name": "Carne Seca, Frango, Azeitona e Queijo", "price": 18.00, "category": "carne-seca" },
+  { "id": 183, "name": "Carne Seca, Lombinho, Milho, Vinagrete, Queijo e Orégano", "price": 19.50, "category": "carne-seca" },
+  { "id": 232, "name": "carne-seca", "price": 25.00, "category": "carne-seca" },
+  { "id": 271, "name": "Carne Seca, Frango e Cheddar", "price": 18.00, "category": "carne-seca" },
+  { "id": 272, "name": "Carne Seca, Frango e Catupiry", "price": 18.50, "category": "carne-seca" },
+  { "id": 273, "name": "Carne Seca, Frango e Queijo", "price": 19.00, "category": "carne-seca" },
+  { "id": 274, "name": "Carne Seca, Bacon e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 275, "name": "Carne Seca, Calabresa, Bacon e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 276, "name": "Carne Seca, Frango, Bacon e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 277, "name": "Carne Seca, Frango, Bacon e Cheddar", "price": 20.00, "category": "carne-seca" },
+  { "id": 278, "name": "Carne Seca, Frango, Bacon e Catupiry", "price": 20.00, "category": "carne-seca" },
+  { "id": 279, "name": "Carne Seca, Peito de Peru, Pepperoni e Queijo", "price": 22.00, "category": "carne-seca" },
+  { "id": 280, "name": "Carne Seca, Purê, Bacon, Calabresa, Queijo e Vinagrete", "price": 20.00, "category": "carne-seca" },
+  { "id": 281, "name": "Carne Seca, Purê, Bacon e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 314, "name": "Carne Seca, Purê, Bacon, Calabresa e Queijo", "price": 20.00, "category": "carne-seca" },
+  { "id": 315, "name": "Carne Seca, Calabresa, Bacon, Frango e Queijo", "price": 22.00, "category": "carne-seca" },
+  { "id": 332, "name": "Carne Seca, Purê e Calabresa", "price": 18.50, "category": "carne-seca" },
+
+  // ===== CARNE DO SOL =====
+  { "id": 107, "name": "Carne do Sol com Purê", "price": 18.00, "category": "carne-sol" },
+  { "id": 108, "name": "Carne do Sol com Cheddar", "price": 18.00, "category": "carne-sol" },
+  { "id": 109, "name": "Carne do Sol com Catupiry", "price": 18.00, "category": "carne-sol" },
+  { "id": 110, "name": "Carne do Sol com Queijo", "price": 19.50, "category": "carne-sol" },
+  { "id": 111, "name": "Carne do Sol com Calabresa e Queijo", "price": 19.50, "category": "carne-sol" },
+  { "id": 112, "name": "Carne do Sol com Purê e Queijo", "price": 18.50, "category": "carne-sol" },
+  { "id": 113, "name": "Carne do Sol, Bacon, Calabresa, Vinagrete, Queijo, Purê de Aipim", "price": 20.00, "category": "carne-sol" },
+  { "id": 114, "name": "Carne do Sol com Lombinho, Milho, Vinagrete, Queijo, Orégano", "price": 20.00, "category": "carne-sol" },
+  { "id": 227, "name": "Carne do Sol, Purê, Calabresa e Queijo", "price": 19.50, "category": "carne-sol" },
+  { "id": 228, "name": "Carne do Sol, Salame, Azeitona, Milho e Queijo", "price": 21.00, "category": "carne-sol" },
+  { "id": 229, "name": "Carne do Sol, Salame, Lombinho e Queijo", "price": 21.00, "category": "carne-sol" },
+  { "id": 230, "name": "Carne do Sol, Cheddar, Catupiry e Queijo", "price": 19.00, "category": "carne-sol" },
+  { "id": 231, "name": "Carne do Sol, Salame, Lombinho, Azeitona, Purê e Queijo", "price": 20.00, "category": "carne-sol" },
+  { "id": 308, "name": "Carne do Sol, Calabresa, Bacon e Queijo", "price": 22.00, "category": "carne-sol" },
+  { "id": 309, "name": "Carne do Sol, Cheddar, Calabresa e Bacon", "price": 20.00, "category": "carne-sol" },
+  { "id": 310, "name": "Carne do Sol, Catupiry, Calabresa e Bacon", "price": 20.00, "category": "carne-sol" },
+  { "id": 311, "name": "Carne do Sol, Peito de Peru, Pepperoni e Queijo", "price": 22.00, "category": "carne-sol" },
+  { "id": 312, "name": "Carne do Sol, Pepperoni, Cheddar e Queijo", "price": 19.50, "category": "carne-sol" },
+  { "id": 313, "name": "Carne do Sol, Pepperoni, Catupiry e Queijo", "price": 19.50, "category": "carne-sol" },
+  { "id": 331, "name": "Carne do Sol, Purê e Calabresa", "price": 18.50, "category": "carne-sol" },
+  { "id": 333, "name": "Carne do Sol, Queijo, Calabresa, Frango, Presunto e Cheddar", "price": 20.00, "category": "carne-sol" },
+
+  // ===== CALABRESA =====
+  { "id": 96, "name": "Calabresa", "price": 16.00, "category": "calabresa" },
+  { "id": 97, "name": "Calabresa com Purê", "price": 16.50, "category": "calabresa" },
+  { "id": 98, "name": "Calabresa com Queijo", "price": 18.00, "category": "calabresa" },
+  { "id": 99, "name": "Calabresa com Purê e Queijo", "price": 17.00, "category": "calabresa" },
+  { "id": 100, "name": "Calabresa com Catupiry", "price": 16.50, "category": "calabresa" },
+  { "id": 101, "name": "Calabresa com Cheddar", "price": 16.50, "category": "calabresa" },
+  { "id": 102, "name": "Calabresa com Vinagrete, Milho e Queijo", "price": 18.00, "category": "calabresa" },
+  { "id": 103, "name": "Calabresa com Vinagrete", "price": 16.00, "category": "calabresa" },
+  { "id": 104, "name": "Calabresa com Catupiry e Queijo", "price": 17.00, "category": "calabresa" },
+  { "id": 105, "name": "Calabresa com Cheddar e Queijo", "price": 17.00, "category": "calabresa" },
+  { "id": 106, "name": "Calabresa com Purê, Cebola e Queijo", "price": 17.00, "category": "calabresa" },
+  { "id": 221, "name": "Calabresa, Cheddar, Catupiry e Queijo", "price": 18.50, "category": "calabresa" },
+  { "id": 222, "name": "Calabresa, Cheddar e Catupiry", "price": 18.50, "category": "calabresa" },
+  { "id": 223, "name": "Calabresa, Azeitona, Milho, Vinagrete e Queijo", "price": 18.50, "category": "calabresa" },
+  { "id": 224, "name": "Calabresa com Milho e Queijo", "price": 18.00, "category": "calabresa" },
+  { "id": 225, "name": "Calabresa com Milho e Cheddar", "price": 17.50, "category": "calabresa" },
+  { "id": 226, "name": "Calabresa com Milho e Catupiry", "price": 17.50, "category": "calabresa" },
+  { "id": 304, "name": "Calabresa, Purê, Bacon e Queijo", "price": 18.00, "category": "calabresa" },
+  { "id": 305, "name": "Calabresa, Purê, Cheddar e Queijo", "price": 17.50, "category": "calabresa" },
+  { "id": 306, "name": "Calabresa, Purê, Catupiry e Queijo", "price": 17.50, "category": "calabresa" },
+  { "id": 307, "name": "Calabresa, Peito de Peru, Bacon e Queijo", "price": 21.00, "category": "calabresa" },
+
+  // ===== STROGONOFF =====
+  { "id": 48, "name": "Strogonoff de Frango com Queijo", "price": 18.00, "category": "strogonoff" },
+  { "id": 49, "name": "Strogonoff de Frango", "price": 18.50, "category": "strogonoff" },
+  { "id": 50, "name": "Strogonoff, Queijo, Orégano e Batata Palha", "price": 18.00, "category": "strogonoff" },
+  { "id": 51, "name": "Strogonoff com Purê e Queijo", "price": 17.50, "category": "strogonoff" },
+  { "id": 52, "name": "Strogonoff com Purê e Calabresa", "price": 17.50, "category": "strogonoff" },
+  { "id": 53, "name": "Strogonoff com Purê, Calabresa e Queijo", "price": 18.00, "category": "strogonoff" },
+  { "id": 54, "name": "Strogonoff com Cheddar", "price": 17.50, "category": "strogonoff" },
+  { "id": 55, "name": "Strogonoff com Catupiry", "price": 17.50, "category": "strogonoff" },
+  { "id": 56, "name": "Strogonoff com Purê, Milho, Vinagrete e Queijo", "price": 18.00, "category": "strogonoff" },
+  { "id": 57, "name": "Strogonoff com Milho e Queijo", "price": 18.00, "category": "strogonoff" },
+  { "id": 161, "name": "Strogonoff, Lombinho, Purê, Azeitona e Queijo", "price": 19.00, "category": "strogonoff" },
+  { "id": 162, "name": "Strogonoff, Lombinho, Salame e Queijo", "price": 20.00, "category": "strogonoff" },
+  { "id": 163, "name": "Strogonoff, Milho, Azeitona, Purê e Queijo", "price": 18.00, "category": "strogonoff" },
+  { "id": 164, "name": "Strogonoff, Cheddar, Catupiry e Queijo", "price": 18.00, "category": "strogonoff" },
+  { "id": 165, "name": "Strogonoff, Lombinho e Queijo", "price": 18.50, "category": "strogonoff" },
+  { "id": 166, "name": "Strogonoff, Salame e Queijo", "price": 18.50, "category": "strogonoff" },
+  { "id": 167, "name": "Strogonoff, Lombinho, Bacon, Azeitona e Queijo", "price": 19.50, "category": "strogonoff" },
+  { "id": 168, "name": "Strogonoff, Salame, Lombinho, Purê, Vinagrete, Milho e Queijo", "price": 20.00, "category": "strogonoff" },
+  { "id": 254, "name": "Strogonoff de Frango com Purê", "price": 17.50, "category": "strogonoff" },
+  { "id": 255, "name": "Strogonoff de Frango, Bacon, Pepperoni e Queijo", "price": 21.00, "category": "strogonoff" },
+  { "id": 256, "name": "Strogonoff de Frango, Peito de Peru, Salame e Queijo", "price": 21.00, "category": "strogonoff" },
+  { "id": 257, "name": "Strogonoff de Frango, Purê, Pepperoni, Salame, Lombinho e Queijo", "price": 19.00, "category": "strogonoff" },
+  { "id": 258, "name": "Strogonoff de Frango, Bacon, Purê e Queijo", "price": 19.00, "category": "strogonoff" },
+  { "id": 259, "name": "Strogonoff de Frango, Bacon, Calabresa, Purê, Milho e Queijo", "price": 20.00, "category": "strogonoff" },
+  { "id": 260, "name": "Strogonoff de Frango, Bacon, Calabresa, Purê e Queijo", "price": 20.00, "category": "strogonoff" },
+  { "id": 261, "name": "Strogonoff de Carne", "price": 20.00, "category": "Strogonoff de Carne" },
+  { "id": 262, "name": "Strogonoff de Carne, Queijo, Orégano e Batata Palha", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 263, "name": "Strogonoff de Carne, Purê e Queijo", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 264, "name": "Strogonoff de Carne, Purê, Calabresa e Queijo", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 265, "name": "Strogonoff de Carne, Purê e Calabresa", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 266, "name": "Strogonoff de Carne, Milho e Queijo", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 267, "name": "Strogonoff de Carne, Purê, Milho, Vinagrete e Queijo", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 268, "name": "Strogonoff de Carne, Lombinho e Queijo", "price": 19.00, "category": "Strogonoff de Carne" },
+  { "id": 269, "name": "Strogonoff de Carne, Salame e Queijo", "price": 19.50, "category": "Strogonoff de Carne" },
+  { "id": 270, "name": "Strogonoff de Carne, Lombinho, Salame, Pepperoni e Queijo", "price": 22.00, "category": "Strogonoff de Carne" },
+
+  // ===== ATUM =====
+   { "id": 71, "name": "Atum com Queijo", "price": 18.00, "category": "atum" },
+  { "id": 72, "name": "Atum com Cheddar", "price": 17.00, "category": "atum" },
+  { "id": 73, "name": "Atum com Catupiry", "price": 17.00, "category": "atum" },
+  { "id": 74, "name": "Atum com Queijo, Cebola e Calabresa", "price": 18.00, "category": "atum" },
+  { "id": 75, "name": "Atum com Purê de Aipim", "price": 17.00, "category": "atum" },
+  { "id": 76, "name": "Atum com Purê, Cebola, Queijo e Presunto", "price": 17.50, "category": "atum" },
+  { "id": 77, "name": "Atum com Catupiry e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 78, "name": "Atum com Cheddar e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 184, "name": "Atum, Cheddar, Catupiry e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 185, "name": "Atum, Azeitona, Milho, Vinagrete e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 186, "name": "Atum, Calabresa, Cebola, Purê e Queijo", "price": 18.50, "category": "atum" },
+  { "id": 187, "name": "Atum, Salame, Purê, Vinagrete e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 188, "name": "Atum, Azeitona, Queijo e Orégano", "price": 18.00, "category": "atum" },
+  { "id": 189, "name": "Atum, Lombinho, Azeitona, Queijo e Orégano", "price": 20.00, "category": "atum" },
+  { "id": 190, "name": "Atum, Salame, Lombinho e Queijo", "price": 18.50, "category": "atum" },
+  { "id": 282, "name": "Atum, Purê, Pepperoni, Lombinho e Queijo", "price": 20.00, "category": "atum" },
+  { "id": 283, "name": "Atum, Purê, Bacon, Vinagrete e Queijo", "price": 20.00, "category": "atum" },
+  { "id": 284, "name": "Atum, Pepperoni, Lombinho, Salame e Queijo", "price": 22.00, "category": "atum" },
+  { "id": 285, "name": "Atum, Frango, Calabresa e Queijo", "price": 20.00, "category": "atum" },
+  { "id": 286, "name": "Atum, Frango, Calabresa e Catupiry", "price": 20.00, "category": "atum" },
+  { "id": 287, "name": "Atum, Frango, Calabresa e Cheddar", "price": 20.00, "category": "atum" },
+  { "id": 288, "name": "Atum, Purê, Cheddar e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 289, "name": "Atum, Purê, Catupiry e Queijo", "price": 18.00, "category": "atum" },
+  { "id": 290, "name": "Atum, Purê, Bacon, Vinagrete e Queijo", "price": 19.00, "category": "atum" },
+
+  // ===== PIZZA =====
+  { "id": 80, "name": "Pizza (Queijo, Presunto e Orégano)", "price": 16.00, "category": "pizza" },
+  { "id": 81, "name": "Pizza com Milho (Queijo, Presunto, Orégano e Milho)", "price": 16.00, "category": "pizza" },
+  { "id": 82, "name": "Pizza com Calabresa (Queijo, Presunto, Orégano e Calabresa)", "price": 16.50, "category": "pizza" },
+  { "id": 83, "name": "Pizza com Frango (Queijo, Presunto, Orégano e Frango)", "price": 17.00, "category": "pizza" },
+  { "id": 84, "name": "Pizza com Atum (Queijo, Presunto, Orégano e Atum)", "price": 17.00, "category": "pizza" },
+  { "id": 85, "name": "Pizza com Carne (Queijo, Presunto, Orégano e Carne)", "price": 17.00, "category": "pizza" },
+  { "id": 86, "name": "Pizza com Purê de Aipim (Queijo, Presunto, Orégano e Purê)", "price": 16.50, "category": "pizza" },
+  { "id": 87, "name": "Pizza com Carne Seca (Queijo, Presunto, Orégano e Carne Seca)", "price": 18.00, "category": "pizza" },
+  { "id": 201, "name": "Pizza, Cheddar e Catupiry", "price": 17.00, "category": "pizza" },
+  { "id": 202, "name": "Pepperoni, Salame, Lombinho, Purê, Vinagrete, Milho e Queijo", "price": 20.00, "category": "pizza" },
+  { "id": 203, "name": "Pizza com Frango e Cheddar", "price": 17.50, "category": "pizza" },
+  { "id": 204, "name": "Pizza com Frango e Calabresa", "price": 18.00, "category": "pizza" },
+  { "id": 205, "name": "Pizza com Cheddar", "price": 17.00, "category": "pizza" },
+  { "id": 206, "name": "Pizza com Frango e Catupiry", "price": 18.00, "category": "pizza" },
+  { "id": 207, "name": "Pizza com Calabresa e Catupiry", "price": 17.50, "category": "pizza" },
+  { "id": 208, "name": "Pizza com Cheddar, Catupiry e Salame", "price": 18.00, "category": "pizza" },
+  { "id": 209, "name": "Pizza com Salame e Azeitona", "price": 18.00, "category": "pizza" },
+  { "id": 210, "name": "Pizza, Vinagrete, Azeitona e Milho", "price": 17.50, "category": "pizza" },
+  { "id": 211, "name": "Pizza com Catupiry", "price": 17.00, "category": "pizza" },
+  { "id": 291, "name": "Pizza, Atum, Calabresa e Cebola", "price": 18.00, "category": "pizza" },
+  { "id": 292, "name": "Pizza com Bacon", "price": 17.50, "category": "pizza" },
+  { "id": 293, "name": "Pizza, Bacon, Calabresa, Cebola e Azeitona", "price": 18.50, "category": "pizza" },
+  { "id": 294, "name": "Pizza, Carne Seca, Bacon e Frango", "price": 21.00, "category": "pizza" },
+  { "id": 295, "name": "Pizza, Pepperoni, Salame e Peito de Peru", "price": 22.00, "category": "pizza" },
+  { "id": 296, "name": "Pizza, Frango, Calabresa e Cebola", "price": 18.50, "category": "pizza" },
+  { "id": 297, "name": "Pizza, Carne do Sol e Bacon", "price": 21.00, "category": "pizza" },
+  { "id": 298, "name": "Pizza, Purê e Pepperoni", "price": 18.00, "category": "pizza" },
+  { "id": 299, "name": "Pizza, Purê, Calabresa e Cebola", "price": 18.00, "category": "pizza" },
+  { "id": 300, "name": "Pizza, Purê e Cheddar", "price": 17.00, "category": "pizza" },
+  { "id": 301, "name": "Pizza, Purê e Catupiry", "price": 17.00, "category": "pizza" },
+  { "id": 302, "name": "Pizza, Bacon, Pepperoni, Milho e Vinagrete", "price": 19.00, "category": "pizza" },
+  { "id": 303, "name": "Pizza, Carne, Bacon e Calabresa", "price": 20.00, "category": "pizza" },
+
+  // ===== MISTO =====
+  { id: 79, name: "Misto (Queijo e Presunto)", price: 16.00, category: "misto" },
+  { "id": 191, "name": "Misto com Frango, Azeitona e Salame", "price": 18.50, "category": "misto" },
+  { "id": 192, "name": "Misto com Calabresa, Salame e Milho", "price": 18.50, "category": "misto" },
+  { "id": 193, "name": "Misto com Frango e Calabresa", "price": 17.50, "category": "misto" },
+  { "id": 194, "name": "Misto com Cheddar", "price": 17.00, "category": "misto" },
+  { "id": 195, "name": "Misto com Catupiry", "price": 17.00, "category": "misto" },
+  { "id": 196, "name": "Misto com Catupiry e Cheddar", "price": 17.50, "category": "misto" },
+  { "id": 197, "name": "Misto com Atum e Azeitona", "price": 17.50, "category": "misto" },
+  { "id": 198, "name": "Misto com Carne Seca, Azeitona, Milho e Vinagrete", "price": 19.00, "category": "misto" },
+  { "id": 199, "name": "Misto com Carne, Calabresa, Azeitona e Milho", "price": 18.00, "category": "misto" },
+  { "id": 200, "name": "Misto com Carne do Sol", "price": 18.00, "category": "misto" },
+
+  // ===== QUEIJO =====
+  { "id": 88, "name": "Portuguesa (Queijo, Presunto, Tomate, Ovo e Orégano)", "price": 17.00, "category": "queijo" },
+  { "id": 89, "name": "Marguerita (Queijo, Presunto, Ovo, Tomate, Cebola e Orégano)", "price": 17.00, "category": "queijo" },
+  { "id": 90, "name": "Queijo, Azeitona, Milho, Tomate e Orégano", "price": 18.00, "category": "queijo" },
+  { "id": 91, "name": "queijo", "price": 18.00, "category": "queijo" },
+  { "id": 92, "name": "Queijo com Purê de Aipim", "price": 17.00, "category": "queijo" },
+  { "id": 93, "name": "Queijo com Milho e Orégano", "price": 18.00, "category": "queijo" },
+  { "id": 94, "name": "Queijo com Milho, Tomate e Orégano", "price": 18.00, "category": "queijo" },
+  { "id": 95, "name": "Queijo com Tomate e Orégano", "price": 18.00, "category": "queijo" },
+  { "id": 212, "name": "Queijo com Azeitona", "price": 18.00, "category": "queijo" },
+  { "id": 213, "name": "Queijo com Salame", "price": 18.50, "category": "queijo" },
+  { "id": 214, "name": "Queijo com Bacon", "price": 18.50, "category": "queijo" },
+  { "id": 215, "name": "Queijo com Cheddar e Catupiry", "price": 18.00, "category": "queijo" },
+  { "id": 216, "name": "Queijo com Cheddar", "price": 18.00, "category": "queijo" },
+  { "id": 217, "name": "Queijo com Catupiry", "price": 18.00, "category": "queijo" },
+  { "id": 218, "name": "Queijo com Bacon e Purê", "price": 18.50, "category": "queijo" },
+  { "id": 219, "name": "Queijo com Bacon e Calabresa", "price": 18.50, "category": "queijo" },
+  { "id": 220, "name": "Queijo com Bacon, Calabresa, Salame e Purê", "price": 20.00, "category": "queijo" },
+  { "id": 323, "name": "Queijo, Vinagrete, Azeitona, Milho e Orégano", "price": 18.00, "category": "queijo" },
+
+  // ===== especiais =====
+  { "id": 115, "name": "Escondidinho (Carne do Sol, Purê, Calabresa, Bacon e Queijo)", "price": 20.00, "category": "especiais" },
+  { "id": 116, "name": "especiais", "price": 19.00, "category": "especiais" },
+  { "id": 117, "name": "Bobó com Queijo", "price": 19.00, "category": "especiais" },
+  { "id": 118, "name": "Bobó com Catupiry", "price": 19.00, "category": "especiais" },
+  { "id": 119, "name": "Bobó com Cheddar", "price": 19.00, "category": "especiais" },
+  { "id": 120, "name": "Bobó com Milho e Queijo", "price": 19.00, "category": "especiais" },
+  { "id": 121, "name": "Bacalhau", "price": 28.00, "category": "especiais" },
+  { "id": 122, "name": "Bacalhau com Purê", "price": 25.00, "category": "especiais" },
+  { "id": 123, "name": "Bacalhau com Queijo", "price": 26.00, "category": "especiais" },
+  { "id": 124, "name": "Pastel X-Tudo - Até Quatro Combinações (exceto especiais)", "price": 40.00, "category": "especiais" },
+  { "id": 125, "name": "Lombinho com Queijo", "price": 18.00, "category": "especiais" },
+  { "id": 126, "name": "Lombinho com Frango", "price": 18.00, "category": "especiais" },
+  { "id": 127, "name": "Lombinho com Pizza", "price": 17.00, "category": "especiais" },
+  { "id": 128, "name": "Lombinho com Queijo, Milho e Orégano", "price": 18.50, "category": "especiais" },
+  { "id": 129, "name": "Lombinho com Cheddar", "price": 17.50, "category": "especiais" },
+  { "id": 130, "name": "Lombinho com Catupiry", "price": 17.50, "category": "especiais" },
+  { "id": 131, "name": "Lombinho com Pizza e Calabresa", "price": 18.00, "category": "especiais" },
+  { "id": 132, "name": "Lombinho com Misto e Calabresa", "price": 18.00, "category": "especiais" },
+  { "id": 133, "name": "Lombinho com Frango, Queijo e Orégano", "price": 18.00, "category": "especiais" },
+  { "id": 134, "name": "Lombinho com Frango e Calabresa", "price": 18.00, "category": "especiais" },
+  { "id": 316, "name": "especiais, Lombinho e Queijo", "price": 20.00, "category": "especiais" },
+  { "id": 317, "name": "especiais, Pepperoni, Vinagrete e Queijo", "price": 20.00, "category": "especiais" },
+  { "id": 318, "name": "especiais, Milho, Vinagrete, Azeitona e Queijo", "price": 20.00, "category": "especiais" },
+  { "id": 319, "name": "Purê, Milho e Queijo", "price": 16.50, "category": "especiais" },
+  { "id": 320, "name": "Purê, Azeitona, Milho e Queijo", "price": 16.50, "category": "especiais" },
+  { "id": 321, "name": "Purê, Azeitona e Queijo", "price": 16.50, "category": "especiais" },
+  { "id": 322, "name": "Purê, Vinagrete, Milho, Azeitona e Queijo", "price": 16.50, "category": "especiais" },
+  { "id": 324, "name": "Lombinho, Bacon, Calabresa e Queijo", "price": 20.00, "category": "especiais" },
+  { "id": 325, "name": "Lombinho, Pepperoni, Frango e Queijo", "price": 21.00, "category": "especiais" },
+  { "id": 326, "name": "Lombinho, Peito de Peru, Pepperoni, Salame e Queijo", "price": 22.00, "category": "especiais" },
+  { "id": 327, "name": "Lombinho, Bacon, Carne Seca e Queijo", "price": 22.00, "category": "especiais" },
+  { "id": 328, "name": "Lombinho, Bacon, Carne do Sol e Queijo", "price": 22.00, "category": "especiais" },
+  { "id": 329, "name": "Lombinho, Bacon, Purê, Cheddar e Queijo", "price": 19.00, "category": "especiais" },
+  { "id": 330, "name": "Lombinho, Bacon, Purê, Catupiry e Queijo", "price": 19.00, "category": "especiais" },
+  { "id": 334, "name": "Peito de Peru com Queijo", "price": 18.50, "category": "especiais" },
+  { "id": 335, "name": "Pepperoni com Queijo", "price": 18.50, "category": "especiais" },
+  { "id": 336, "name": "Pepperoni, Bacon e Queijo", "price": 20.00, "category": "especiais" },
+  { "id": 337, "name": "Pepperoni, Peito de Peru, Bacon, Queijo e Azeitona", "price": 22.00, "category": "especiais" },
+  { "id": 338, "name": "Pepperoni, Carne do Sol, Vinagrete e Queijo", "price": 22.00, "category": "especiais" },
+  { "id": 339, "name": "Pepperoni, Carne Seca, Vinagrete e Queijo", "price": 22.00, "category": "especiais" },
+  { "id": 340, "name": "Pepperoni, Carne, Vinagrete e Queijo", "price": 20.00, "category": "especiais" },
+
+  // ===== DOCES =====
+  { "id": 135, "name": "Romeu e Julieta", "price": 17.00, "category": "doces" },
+  { "id": 136, "name": "Brigadeiro com ou sem Queijo", "price": 17.50, "category": "doces" },
+  { "id": 137, "name": "Doce de Leite com ou sem Queijo", "price": 17.50, "category": "doces" },
+  { "id": 138, "name": "Casadinho com ou sem Queijo", "price": 17.50, "category": "doces" },
+  { "id": 139, "name": "Beijinho com ou sem Queijo", "price": 17.50, "category": "doces" },
+  { "id": 140, "name": "Chocolate com Morango", "price": 18.00, "category": "doces" },
+
+  // ===== X-TUDO =====
+  { id: 124, name: "Pastel X-Tudo (até 4 combinações)", price: 40.00, category: "xtudo" }
+];
+
+const ADDITIONALS = [
+  { name: "Cheddar", price: 2.00 },
+  { name: "Catupiry", price: 2.00 },
+  { name: "Milho", price: 1.50 },
+  { name: "Azeitona", price: 1.50 },
+  { name: "Purê", price: 2.50 },
+  { name: "queijo", price: 5.00 },
+  { name: "Proteína", price: 5.00 }
+];
+
+var cart = {};
+
+var currentCategory = "";
+
+function renderMenu(category) {
+  currentCategory = category;
+
+  document.getElementById("kp-initial-placeholder").style.display = "none";
+  document.getElementById("kp-search-bar").style.display = "block";
+  document.getElementById("kp-search-input").value = "";
+
+  var container = document.getElementById("kp-menu-section");
+  container.innerHTML = "";
+
+  var filtered = menuItems.filter(function(item) {
+    return item.category === category;
+  });
+
+  applySearchFilter(filtered);
+}
+
+function applySearchFilter(list) {
+  var container = document.getElementById("kp-menu-section");
+  container.innerHTML = "";
+
+  var searchValue = document.getElementById("kp-search-input").value.toLowerCase();
+
+  var result = list.filter(function(item) {
+    return (
+      item.name.toLowerCase().includes(searchValue) ||
+      String(item.id).includes(searchValue)
+    );
+  });
+
+  if (result.length === 0) {
+    container.innerHTML = `
+      <div class="kp-items-placeholder">
+        Nenhum item encontrado para esta pesquisa.
+      </div>
+    `;
+    return;
+  }
+
+  result.forEach(function(item) {
+    cart[item.id] = cart[item.id] || { qty: 0, additionals: [] };
+
+    var card = document.createElement("div");
+    card.className = "kp-item-card";
+
+    card.innerHTML = `
+      <div class="kp-item-header">
+        <span class="kp-item-number">#${item.id}</span>
+        <span class="kp-item-price">R$ ${item.price.toFixed(2)}</span>
+      </div>
+
+      <div class="kp-item-name">${item.name}</div>
+
+      <div class="kp-item-controls">
+        <button class="kp-qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
+        <span class="kp-qty-display" id="qty-${item.id}">${cart[item.id].qty}</span>
+        <button class="kp-qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+
+        <button class="kp-additional-btn" onclick="toggleAdditionals(${item.id})">
+          Opcionais
+        </button>
+      </div>
+
+      <div class="kp-additionals-box" id="add-${item.id}">
+        ${ADDITIONALS.map(function(add) {
+          return `
+            <label>
+              <span>${add.name}</span>
+              <input type="checkbox" onchange="toggleAdd(${item.id}, '${add.name}')">
+            </label>
+          `;
+        }).join("")}
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+document.getElementById("kp-search-input").addEventListener("input", function () {
+  if (!currentCategory) return;
+
+  var filtered = menuItems.filter(function(item) {
+    return item.category === currentCategory;
+  });
+
+  applySearchFilter(filtered);
+});
+
+function updateQty(id, delta) {
+  cart[id].qty = Math.max(0, cart[id].qty + delta);
+  document.getElementById(`qty-${id}`).innerText = cart[id].qty;
+}
+
+function toggleAdditionals(id) {
+  const box = document.getElementById(`add-${id}`);
+  box.style.display = box.style.display === "block" ? "none" : "block";
+}
+
+function toggleAdd(id, name) {
+  const list = cart[id].additionals;
+  if (list.includes(name)) {
+    cart[id].additionals = list.filter(a => a !== name);
+  } else {
+    list.push(name);
+  }
+}
+
+/* Conecta com as abas da PARTE 4 */
+document.querySelectorAll(".kp-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    const category = tab.getAttribute("data-category");
+    renderMenu(category);
+  });
+});
+</script>
+
+<!-- ========================= -->
+<!-- PARTE 6 – CARRINHO FIXO + TOTAL -->
+<!-- ========================= -->
+
+<section class="kp-cart-bar">
+  <div class="kp-cart-info">
+    <div class="kp-cart-qty">
+      🛒 <span id="kp-cart-total-items">0</span> itens
+    </div>
+    <div class="kp-cart-total">
+      Total: <strong>R$ <span id="kp-cart-total-price">0,00</span></strong>
+    </div>
+  </div>
+
+  <button class="kp-cart-button" id="kp-open-checkout">
+    PEDIR
+  </button>
+</section>
+
+<style>
+/* ========================= */
+/* ESTILOS – PARTE 6 */
+/* ========================= */
+
+.kp-cart-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to right, #000000, #1a1a1a);
+  border-top: 3px solid #ffca28;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  z-index: 999;
+  box-shadow: 0 -6px 16px rgba(0,0,0,0.6);
+}
+
+.kp-cart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+}
+
+.kp-cart-qty {
+  font-weight: 600;
+}
+
+.kp-cart-total {
+  color: #ffca28;
+  font-size: 0.9rem;
+}
+
+.kp-cart-button {
+  background: linear-gradient(to right, #ffca28, #ffe082);
+  color: #000000;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.kp-cart-button:active {
+  transform: scale(0.96);
+}
+
+/* Espaço extra no final do main para não ficar escondido atrás da barra */
+.kp-main {
+  padding-bottom: 90px;
+}
+</style>
+
+<script>
+/* ========================= */
+/* SCRIPT – PARTE 6 */
+/* ========================= */
+
+function calculateTotal() {
+  let totalItems = 0;
+  let totalPrice = 0;
+
+  for (const id in cart) {
+    const item = cart[id];
+    if (item.qty > 0) {
+      const product = menuItems.find(p => p.id == id);
+      if (!product) continue;
+
+      totalItems += item.qty;
+
+      let itemTotal = product.price * item.qty;
+
+      if (item.additionals.length > 0) {
+        item.additionals.forEach(addName => {
+          const add = ADDITIONALS.find(a => a.name === addName);
+          if (add) {
+            itemTotal += add.price * item.qty;
+          }
+        });
+      }
+
+      totalPrice += itemTotal;
+    }
+  }
+
+  document.getElementById("kp-cart-total-items").innerText = totalItems;
+  document.getElementById("kp-cart-total-price").innerText =
+    totalPrice.toFixed(2).replace(".", ",");
+}
+
+/* Atualiza o carrinho sempre que muda quantidade */
+const originalUpdateQty = updateQty;
+updateQty = function(id, delta) {
+  originalUpdateQty(id, delta);
+  calculateTotal();
+};
+
+/* Atualiza o carrinho quando altera adicionais */
+const originalToggleAdd = toggleAdd;
+toggleAdd = function(id, name) {
+  originalToggleAdd(id, name);
+  calculateTotal();
+};
+
+/* Clique no botão PEDIR (vai abrir o checkout na PARTE 7) */
+document.getElementById("kp-open-checkout").addEventListener("click", () => {
+  const totalItems = document.getElementById("kp-cart-total-items").innerText;
+  if (totalItems === "0") {
+    alert("Seu carrinho está vazio. Selecione pelo menos um item.");
+    return;
+  }
+
+  openCheckout(); // Função será criada na PARTE 7
+});
+</script>
+
+<!-- ========================= -->
+<!-- PARTE 7 – CHECKOUT -->
+<!-- ========================= -->
+
+<section class="kp-checkout-overlay" id="kp-checkout-overlay">
+  <div class="kp-checkout-modal">
+    <h2>Finalizar Pedido</h2>
+
+    <label>
+      Seu nome:
+      <input type="text" id="kp-client-name" placeholder="Digite seu nome">
+    </label>
+
+    <div class="kp-payment-options">
+      <p><strong>Forma de pagamento:</strong></p>
+
+      <label><input type="radio" name="payment" value="pix"> PIX</label>
+      <label><input type="radio" name="payment" value="dinheiro"> Dinheiro</label>
+      <label><input type="radio" name="payment" value="cartao"> Cartão</label>
+    </div>
+
+    <div class="kp-pix-info" id="kp-pix-info">
+      <p><strong>Chave PIX:</strong></p>
+      <div class="kp-pix-box">
+        <span id="kp-pix-key">(71) 99298-4064</span>
+        <button onclick="copyPix()">Copiar</button>
+      </div>
+    </div>
+
+    <div class="kp-checkout-warnings">
+      <p>🚫 Não realizamos entregas no momento.</p>
+      <p>✅ Pedido deve ser retirado no local.</p>
+      <p>💳 Pagamento em dinheiro ou cartão será realizado no local.</p>
+    </div>
+
+    <div class="kp-order-summary" id="kp-order-summary"></div>
+
+    <div class="kp-checkout-actions">
+      <button class="kp-btn-secondary" onclick="closeCheckout()">Editar Pedido</button>
+      <button class="kp-btn-primary" onclick="confirmOrder()">Confirmar Pedido</button>
+    </div>
+  </div>
+</section>
+
+<style>
+/* ========================= */
+/* ESTILOS – PARTE 7 */
+/* ========================= */
+
+.kp-checkout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.kp-checkout-modal {
+  background: #000;
+  border: 3px solid #ffca28;
+  border-radius: 18px;
+  width: 92%;
+  max-width: 420px;
+  padding: 18px;
+  color: #fff;
+}
+
+.kp-checkout-modal h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.kp-checkout-modal label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+}
+
+.kp-checkout-modal input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: none;
+}
+
+.kp-payment-options {
+  margin: 10px 0;
+  font-size: 0.85rem;
+}
+
+.kp-payment-options label {
+  margin-right: 12px;
+}
+
+.kp-pix-info {
+  display: none;
+  background: #111;
+  border: 1px dashed #ffca28;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.kp-pix-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kp-pix-box button {
+  background: #ffca28;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-weight: 700;
+}
+
+.kp-checkout-warnings {
+  font-size: 0.75rem;
+  background: #111;
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.kp-order-summary {
+  max-height: 180px;
+  overflow-y: auto;
+  background: #111;
+  border-radius: 10px;
+  padding: 8px;
+  font-size: 0.75rem;
+  margin-bottom: 10px;
+}
+
+.kp-checkout-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.kp-btn-primary {
+  flex: 1;
+  background: #ffca28;
+  color: #000;
+  border: none;
+  border-radius: 999px;
+  padding: 10px;
+  font-weight: 800;
+}
+
+.kp-btn-secondary {
+  flex: 1;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px;
+  font-weight: 700;
+}
+</style>
+
+<script>
+/* ========================= */
+/* SCRIPT – PARTE 7 */
+/* ========================= */
+
+function openCheckout() {
+  document.getElementById("kp-checkout-overlay").style.display = "flex";
+  generateSummary();
+}
+
+function closeCheckout() {
+  document.getElementById("kp-checkout-overlay").style.display = "none";
+}
+
+document.querySelectorAll("input[name='payment']").forEach(radio => {
+  radio.addEventListener("change", () => {
+    document.getElementById("kp-pix-info").style.display =
+      radio.value === "pix" ? "block" : "none";
+  });
+});
+
+function copyPix() {
+  navigator.clipboard.writeText("71992984064");
+  alert("Chave PIX copiada!");
+}
+
+function generateSummary() {
+  const summaryBox = document.getElementById("kp-order-summary");
+  let html = "";
+  let total = 0;
+
+  for (const id in cart) {
+    const item = cart[id];
+    if (item.qty > 0) {
+      const product = menuItems.find(p => p.id == id);
+      let subtotal = product.price * item.qty;
+
+      if (item.additionals.length > 0) {
+        item.additionals.forEach(addName => {
+          const add = ADDITIONALS.find(a => a.name === addName);
+          if (add) subtotal += add.price * item.qty;
+        });
+      }
+
+      total += subtotal;
+
+      html += `
+        <p>
+          <strong>#${product.id}</strong> ${product.name}<br>
+          Qtd: ${item.qty}<br>
+          Adicionais: ${item.additionals.length ? item.additionals.join(", ") : "Nenhum"}
+        </p>
+        <hr>
+      `;
+    }
+  }
+
+  html += `<p><strong>Total: R$ ${total.toFixed(2).replace(".", ",")}</strong></p>`;
+  summaryBox.innerHTML = html;
+}
+
+function confirmOrder() {
+  const name = document.getElementById("kp-client-name").value.trim();
+  const payment = document.querySelector("input[name='payment']:checked");
+
+  if (!name) {
+    alert("Informe seu nome.");
+    return;
+  }
+
+  if (!payment) {
+    alert("Selecione a forma de pagamento.");
+    return;
+  }
+
+  finalizeWhatsAppOrder(name, payment.value);
+}
+</script>
+<!-- ========================= -->
+<!-- PARTE 8 – WHATSAPP + MENSAGEM FINAL -->
+<!-- ========================= -->
+
+<script>
+/* ========================= */
+/* SCRIPT – PARTE 8 */
+/* ========================= */
+
+function finalizeWhatsAppOrder(clientName, paymentMethod) {
+  let message = `Olá, sou ${clientName}, gostaria de pedir o:%0A%0A`;
+  let total = 0;
+
+  for (const id in cart) {
+    const item = cart[id];
+    if (item.qty > 0) {
+      const product = menuItems.find(p => p.id == id);
+      if (!product) continue;
+
+      let subtotal = product.price * item.qty;
+      let addText = "Nenhum";
+
+      if (item.additionals.length > 0) {
+        addText = item.additionals.join(", ");
+        item.additionals.forEach(addName => {
+          const add = ADDITIONALS.find(a => a.name === addName);
+          if (add) subtotal += add.price * item.qty;
+        });
+      }
+
+      total += subtotal;
+
+      message += `• Nº ${product.id}%0A`;
+      message += `  ${product.name}%0A`;
+      message += `  Quantidade: ${item.qty}%0A`;
+      message += `  Adicionais: ${addText}%0A%0A`;
+    }
+  }
+
+  let paymentText = "";
+  if (paymentMethod === "pix") {
+    paymentText = "PIX (Chave: 71 99298-4064)";
+  } else if (paymentMethod === "dinheiro") {
+    paymentText = "Dinheiro (pagamento no local)";
+  } else if (paymentMethod === "cartao") {
+    paymentText = "Cartão (pagamento no local)";
+  }
+
+  message += `  Total do pedido: R$ ${total.toFixed(2).replace(".", ",")}%0A`;
+  message += `  Forma de pagamento: ${paymentText}%0A%0A`;
+  //message += `Pedido para retirada no local.%0A`;
+  //message += `Horário: Quarta a Domingo - 18h às 23h`;
+  const phone = "5571992984064";
+  const url = `https://wa.me/${phone}?text=${message}`;
+
+  window.location.href = url;
+}
+</script>
+
+<script>
+(function () {
+  try {
+    var versionKey = "kp_app_version";
+    var currentVersion = APP_VERSION;
+    var savedVersion = localStorage.getItem(versionKey);
+
+    //  Se a versão mudou, força reload COM CACHE-BUST
+    if (savedVersion !== currentVersion) {
+      localStorage.setItem(versionKey, currentVersion);
+      var baseUrl = window.location.pathname;
+      window.location.replace(baseUrl + "?v=" + Date.now());
+      return;
+    }
+
+    //  Se já tem versão, mas está sem ?v=, garante que passe a usar
+    if (!window.location.search.includes("v=")) {
+      var baseUrl = window.location.pathname;
+      window.location.replace(baseUrl + "?v=" + Date.now());
+    }
+
+  } catch (e) {
+    console.error("Erro na verificação de versão", e);
+  }
+})();
+</script>
+
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistration().then(function (reg) {
+    if (!reg) return;
+
+    reg.update(); // força o navegador a buscar atualização do SW
+
+    // Se um novo service worker estiver esperando, ativa ele automaticamente
+    if (reg.waiting) {
+      reg.waiting.postMessage({ action: "skipWaiting" });
+    }
+
+    reg.addEventListener("updatefound", function () {
+      var newWorker = reg.installing;
+
+      newWorker.addEventListener("statechange", function () {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          // ✅ Novo SW ativo → recarrega o app automaticamente
+          window.location.reload();
+        }
+      });
+    });
+  });
+}
+</script>
+<script>
+  // Bloqueia pinch-zoom
+  document.addEventListener("touchmove", function (event) {
+    if (event.scale !== 1) {
+      event.preventDefault();
+    }
+  }, { passive: false });
+
+  // Bloqueia double-tap zoom
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", function (event) {
+    const now = new Date().getTime();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+</script>
+
+      </main>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

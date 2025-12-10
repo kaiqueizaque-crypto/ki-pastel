@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Ki-Pastel • Instalar App</title>
+  <meta 
+  name="viewport" 
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#9c1c1c">
+
+  <!-- Ícones -->
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<style>
+  
+    html, body {
+     touch-action: manipulation;
+         }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #9c1c1c, #000);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .install-box {
+      background: #000;
+      border: 2px solid #ffca28;
+      border-radius: 18px;
+      width: 90%;
+      max-width: 380px;
+      padding: 24px 18px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .install-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 14px auto;
+      display: block;
+      border: 2px solid #ffca28;
+      background: #000;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #ffca28;
+    }
+
+    p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-bottom: 18px;
+    }
+
+    .btn-install {
+      width: 100%;
+      background: linear-gradient(to right, #ffca28, #ffe082);
+      color: #000;
+      border: none;
+      border-radius: 999px;
+      padding: 12px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+    }
+
+    .btn-later {
+      width: 100%;
+      background: transparent;
+      color: #ffca28;
+      border: 1px solid #ffca28;
+      border-radius: 999px;
+      padding: 10px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="install-box" id="installBox">
+    <img src="icon-192.png" class="install-logo">
+
+    <h1>Instale o App da Ki-Pastel</h1>
+    <p>Tenha acesso rápido ao cardápio direto na sua tela inicial.</p>
+
+    <button class="btn-install" id="btnInstall">Instalar agora</button>
+    <button class="btn-later" id="btnLater">Instalar depois</button>
+  </div>
+
+  <script>
+    var deferredPrompt;
+    var CARDAPIO_URL = "Cardapio.html?v=" + Date.now();
+
+    // ✅ Se já fechou antes, vai direto pro cardápio
+    if (localStorage.getItem("kp_install_closed") === "true") {
+      window.location.replace(CARDAPIO_URL);
+    }
+
+    // ✅ Se já está rodando como app (Android + iOS), pula direto pro cardápio
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true
+    ) {
+      window.location.replace(CARDAPIO_URL);
+    }
+
+    // ✅ Captura o evento oficial de instalação (Android)
+    window.addEventListener("beforeinstallprompt", function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // ✅ Botão "Instalar agora"
+    document.getElementById("btnInstall").addEventListener("click", function() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+
+        deferredPrompt.userChoice.then(function() {
+          deferredPrompt = null;
+          window.location.replace(CARDAPIO_URL);
+        });
+      } else {
+        alert("No iPhone: toque em Compartilhar e depois em 'Adicionar à Tela de Início'.");
+      }
+    });
+
+    // ✅ Botão "Instalar depois"
+    document.getElementById("btnLater").addEventListener("click", function() {
+      localStorage.setItem("kp_install_closed", "true");
+      window.location.replace(CARDAPIO_URL);
+    });
+
+    // ✅ Detecta quando o app foi instalado de fato
+    window.addEventListener("appinstalled", function () {
+      localStorage.setItem("kp_installed", "true");
+    });
+  </script>
+
+</body>
+</html>
+
