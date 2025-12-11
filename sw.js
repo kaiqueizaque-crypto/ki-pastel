@@ -1,13 +1,21 @@
-var CACHE_NAME = "ki-pastel-v1.1.1";
+/* sw.js - Sigma Web Systems
+   Politica: NETWORK-FIRST para HTML (navegação)
+            CACHE-FIRST para assets (imagens/css/js)
+   Offline only as fallback. Nunca cachear HTML inválido.
+*/
 
+var CACHE_NAME = "ki-pastel-v1.2.0";
+var OFFLINE_PAGE = "Cardapio.html";
+
+// Lista mínima de assets a colocar no cache durante a instalação
 var urlsToCache = [
-  "Cardapio.html",
+  OFFLINE_PAGE,
   "manifest.json",
   "icon-192.png",
   "icon-512.png"
 ];
 
-// Instala e assume controle imediatamente
+// Install -> pré-cache do mínimo necessário (fallback)
 self.addEventListener("install", function (event) {
   self.skipWaiting();
   event.waitUntil(
@@ -17,7 +25,7 @@ self.addEventListener("install", function (event) {
   );
 });
 
-// Remove caches antigos
+// Activate -> limpar caches antigos
 self.addEventListener("activate", function (event) {
   event.waitUntil(
     caches.keys().then(function (cacheNames) {
@@ -34,48 +42,76 @@ self.addEventListener("activate", function (event) {
   );
 });
 
-// Network-first com fallback seguro
-self.addEventListener("fetch", function (event) {
-  const request = event.request;
-  const url = new URL(request.url);
+// Helper: testa se a response é segura para cache
+function isValidResponseForCache(response) {
+  // quer somente responses ok (status 200) e tipo basic (mesma origem)
+  return response && response.status === 200 && response.type === "basic";
+}
 
-  // HTML principal → nunca cachear resposta inválida
+// Fetch handler
+self.addEventListener("fetch", function (event) {
+  var request = event.request;
+
+  // Somente interceptar requisições GET (evita POST/PUT etc)
+  if (request.method !== "GET") {
+    return;
+  }
+
+  // Tratamento especial: navegação (HTML)
   if (request.mode === "navigate") {
     event.respondWith(
+      // Tenta pela rede primeiro
       fetch(request)
-        .then(response => {
-          // só salva o HTML se estiver 200 OK
-          if (response.status === 200) {
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put("Cardapio.html", response.clone());
+        .then(function (networkResponse) {
+          // Se a resposta for válida, atualiza o cache do OFFLINE_PAGE
+          if (isValidResponseForCache(networkResponse)) {
+            caches.open(CACHE_NAME).then(function (cache) {
+              // Salva a versão válida do HTML para fallback futuro
+              cache.put(OFFLINE_PAGE, networkResponse.clone());
             });
           }
-          return response;
+          return networkResponse;
         })
-        .catch(() => caches.match("Cardapio.html"))
+        .catch(function () {
+          // Falha de rede -> serve a última versão válida do cache (fallback)
+          return caches.match(OFFLINE_PAGE);
+        })
     );
     return;
   }
 
-  // Assets normais → network first com cache update
+  // Para requests de assets (css, js, imagens, fontes) usar cache-first com atualização em background
   event.respondWith(
-    caches.match(request).then(cached => {
-      const fetchPromise = fetch(request)
-        .then(response => {
-          if (response.status === 200) {
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, response.clone());
-            });
+    caches.match(request).then(function (cachedResponse) {
+      var fetchPromise = fetch(request)
+        .then(function (networkResponse) {
+          // Só atualizar cache se a resposta for válida e for mesma origem
+          try {
+            if (isValidResponseForCache(networkResponse)) {
+              // Opcional: ignore cross-origin opaque responses (fonts CDN, analytics)
+              // Só armazena respostas basic (mesma origem) e status 200
+              caches.open(CACHE_NAME).then(function (cache) {
+                cache.put(request, networkResponse.clone());
+              });
+            }
+          } catch (e) {
+            // segurar falhas silenciosamente
+            console.error("SW: erro ao atualizar cache", e);
           }
-          return response;
+          return networkResponse;
         })
-        .catch(() => cached);
+        .catch(function () {
+          // Se a rede falhar, retorna o cache (se existir)
+          return cachedResponse;
+        });
 
-      return cached || fetchPromise;
+      // Se tem cache, devolve imediatamente, senão espera o fetch
+      return cachedResponse || fetchPromise;
     })
   );
 });
 
+// Permite que o cliente peça ao SW para pular waiting
 self.addEventListener("message", function (event) {
   if (event.data && event.data.action === "skipWaiting") {
     self.skipWaiting();
